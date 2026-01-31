@@ -12,7 +12,7 @@ namespace VMCSpout
 {
     [VMCPlugin(
     Name: "VMC Spout",
-    Version: "0.0.1",
+    Version: "0.0.2",
     Author: "snow",
     Description: "Spout2 sender for VMC",
     AuthorURL: "https://twitter.com/snow_mil",
@@ -30,6 +30,7 @@ namespace VMCSpout
         private const int AvatarLayer = 3;
 
         private VMCSpoutSetting _settings = new VMCSpoutSetting();
+        private Camera _currentCamera;
 
         private void Awake()
         {
@@ -64,9 +65,10 @@ namespace VMCSpout
             }
         }
 
-        private void update()
+        private void Update()
         {
-            _spoutCamera.fieldOfView = Camera.main.fieldOfView;
+            if(_currentCamera)
+                _spoutCamera.fieldOfView = _currentCamera.fieldOfView;
 
         }
         private void OnModelLoaded(GameObject currentModel)
@@ -85,6 +87,7 @@ namespace VMCSpout
             {
                 CreateRenderTexture();
             }
+            _currentCamera = currentCamera;
 
             _spoutCamera = Instantiate(currentCamera);
             DestroyImmediate(_spoutCamera.GetComponent("AudioListener"));
