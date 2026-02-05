@@ -23,14 +23,16 @@ namespace VMCSpout
         private SpoutSender _spoutSender = null;
         [SerializeField] private SpoutResources _spoutResources = null;
 
-        private RenderTexture _renderTexture;
-        private Camera _spoutCamera;
+        private RenderTexture _mainCamRenderTexture;
+        private Camera _mainCamSpoutCamera;
         private Dictionary<string, Shader> _shaders = new Dictionary<string, Shader>();
 
         private const int AvatarLayer = 3;
 
         private VMCSpoutSetting _settings = new VMCSpoutSetting();
         private Camera _currentCamera;
+
+        private GameObject _spoutRoot = null;
 
         private void Awake()
         {
@@ -50,92 +52,128 @@ namespace VMCSpout
 
         private void Start()
         {
-            if (_renderTexture == null)
-            {
-                CreateRenderTexture();
-            }
-
             AssetBundle assetBundle = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("VMCSpout.Resources.shader"));
             _shaders = assetBundle.LoadAllAssets<Shader>().ToDictionary(x => x.name);
             assetBundle.Unload(false);
 
-            if (GameObject.Find("VMCSpout") == null)
-            {
-                CreateSpout();
-            }
+            _spoutResources = new SpoutResources();
+            _spoutResources.blitShader = _shaders["Hidden/Klak/Spout/Blit"];
+
         }
 
         private void Update()
         {
-            if(_currentCamera)
-                _spoutCamera.fieldOfView = _currentCamera.fieldOfView;
+            if (_currentCamera)
+            {
+                _mainCamSpoutCamera.fieldOfView = _currentCamera.fieldOfView;
+                _mainCamSpoutCamera.transform.position = _currentCamera.transform.position;
+                _mainCamSpoutCamera.transform.rotation = _currentCamera.transform.rotation;
+            }
 
         }
+
+        [OnSetting]
+        public void OnSetting()
+        {
+            Debug.Log("VMC Spout Setting Opened");
+            var proc = new System.Diagnostics.Process();
+            string dllDirectory = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
+
+            proc.StartInfo.FileName = Path.Combine(dllDirectory, "VMCSpoutSettingWPF.exe");
+            proc.Start();
+            proc.WaitForExit();
+            SpoutCameraInitialize();
+        }
+
         private void OnModelLoaded(GameObject currentModel)
         {
-            SkinnedMeshRenderer[] skinnedMeshRenderers = currentModel.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var smr in skinnedMeshRenderers)
-                smr.gameObject.layer = AvatarLayer;
-            MeshRenderer[] meshRenderers = currentModel.GetComponentsInChildren<MeshRenderer>();
-            foreach (var mr in meshRenderers)
-                mr.gameObject.layer = AvatarLayer;
+            Renderer[] renderers = currentModel.GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+                renderer.gameObject.layer = AvatarLayer;
         }
 
         private void OnCameraChanged(Camera currentCamera)
         {
-            if (_renderTexture == null)
-            {
-                CreateRenderTexture();
-            }
             _currentCamera = currentCamera;
-
-            _spoutCamera = Instantiate(currentCamera);
-            DestroyImmediate(_spoutCamera.GetComponent("AudioListener"));
-            _spoutCamera.transform.SetParent(currentCamera.transform);
-            _spoutCamera.transform.localPosition = Vector3.zero;
-            _spoutCamera.transform.localRotation = Quaternion.identity;
-            _spoutCamera.tag = "Untagged";
-
-            _spoutCamera.clearFlags = CameraClearFlags.SolidColor;
-            _spoutCamera.backgroundColor = new Color(0, 0, 0, 0);
-            _spoutCamera.cullingMask = 1 << AvatarLayer;
-            _spoutCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            _spoutCamera.depth = -1;
-
-            _spoutCamera.targetTexture = _renderTexture;
-
+            SpoutCameraInitialize();
         }
 
-        private void CreateRenderTexture()
+        private void SpoutCameraInitialize()
         {
-            _renderTexture = new RenderTexture(_settings.OutputWidth, _settings.OutputHeight, 24)
+            if(_currentCamera == null)
+                return;
+
+            if (_mainCamRenderTexture == null || _mainCamRenderTexture.width != _settings.MainCamOutputWidth || _mainCamRenderTexture.height != _settings.MainCamOutputHeight)
             {
-                useMipMap = false,
-                anisoLevel = 1,
-                useDynamicScale = false,
-                enableRandomWrite = true
-            };
-            Debug.Log("VMCSpout: RenderTexture created.");
-        }
+                _mainCamRenderTexture?.Release();
+                _mainCamRenderTexture = new RenderTexture(_settings.MainCamOutputWidth, _settings.MainCamOutputHeight, 24)
+                {
+                    useMipMap = false,
+                    anisoLevel = 1,
+                    useDynamicScale = false,
+                    enableRandomWrite = true
+                };
+            }
 
-        private void CreateSpout()
-        {
-            var obj = new GameObject("VMCSpout");
+            if(_currentCamera.gameObject.GetComponentsInChildren<SpoutSender>().Length > 0)
+            {
+                foreach (var spout in _currentCamera.gameObject.GetComponentsInChildren<SpoutSender>())
+                {
+                    DestroyImmediate(spout.gameObject);
+                }
+            }
 
-            _spoutResources = new SpoutResources();
-            _spoutResources.blitShader = _shaders["Hidden/Klak/Spout/Blit"];
+            _mainCamSpoutCamera = Instantiate(_currentCamera);
+            DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));
+            _mainCamSpoutCamera.transform.SetParent(_currentCamera.transform);
+            _mainCamSpoutCamera.transform.localPosition = Vector3.zero;
+            _mainCamSpoutCamera.transform.localRotation = Quaternion.identity;
+            _mainCamSpoutCamera.tag = "Untagged";
 
-            _spoutSender = obj.AddComponent<SpoutSender>();
+            _mainCamSpoutCamera.clearFlags = CameraClearFlags.SolidColor;
+            _mainCamSpoutCamera.backgroundColor = new Color(0, 0, 0, 0);
+            _mainCamSpoutCamera.cullingMask = 1 << AvatarLayer;
+            _mainCamSpoutCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            _mainCamSpoutCamera.depth = -1;
+
+            _mainCamSpoutCamera.targetTexture = _mainCamRenderTexture;
+
+            _spoutSender = _mainCamSpoutCamera.gameObject.AddComponent<SpoutSender>();
 
             _spoutSender.SetResources(_spoutResources);
 
-            _spoutSender.spoutName = _settings.SpoutName;
+            _spoutSender.spoutName = _settings.MainCamSpoutName;
             _spoutSender.keepAlpha = true;
             _spoutSender.captureMethod = CaptureMethod.Texture;
-            
-            _spoutSender.sourceTexture = _renderTexture;
-            
-            Debug.Log("VMCSpout: SpoutObnject Create");
+
+            _spoutSender.sourceTexture = _mainCamRenderTexture;
+
+            if(_spoutRoot != null)
+                DestroyImmediate(_spoutRoot);
+
+            _spoutRoot = new GameObject("VMCSpoutAdditionalCameras");
+            _spoutRoot.transform.position = Vector3.zero;
+            _spoutRoot.transform.rotation = Quaternion.identity;
+
+            foreach (CameraSetting cs in _settings.AdditionalCameras)
+            {
+                var spCamera = Instantiate(_currentCamera);
+                DestroyImmediate(spCamera.GetComponent("AudioListener"));
+                spCamera.transform.SetParent(_spoutRoot.transform);
+                spCamera.transform.position = _currentCamera.transform.position;
+                spCamera.transform.rotation = _currentCamera.transform.rotation;
+                spCamera.tag = "Untagged";
+
+                spCamera.clearFlags = CameraClearFlags.SolidColor;
+                spCamera.backgroundColor = new Color(0, 0, 0, 0);
+                spCamera.cullingMask = 1 << AvatarLayer;
+                spCamera.stereoTargetEye = StereoTargetEyeMask.None;
+                spCamera.depth = -1;
+
+                var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
+                additionalCam.Initialize(cs, _spoutResources);
+            }
+
         }
     }
 }

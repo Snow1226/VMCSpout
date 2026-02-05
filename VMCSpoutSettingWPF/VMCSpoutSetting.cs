@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace VMCSpout
+namespace VMCSpoutSettingWPF
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class VMCSpoutSetting
@@ -14,7 +13,7 @@ namespace VMCSpout
         public int MainCamOutputHeight { get; set; } = 1080;
 
         [JsonProperty]
-        public CameraSetting[] AdditionalCameras { get; set; }
+        public CameraSetting[] AdditionalCameras { get; set; } = new CameraSetting[1] { new CameraSetting() };
     }
 
     public class CameraSetting

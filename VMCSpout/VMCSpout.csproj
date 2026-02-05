@@ -62,12 +62,33 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdditionalCamera.cs" />
+    <Compile Include="uOSC\Runtime\Core\Bundle.cs" />
+    <Compile Include="uOSC\Runtime\Core\DotNet\Thread.cs" />
+    <Compile Include="uOSC\Runtime\Core\DotNet\Udp.cs" />
+    <Compile Include="uOSC\Runtime\Core\Event.cs" />
+    <Compile Include="uOSC\Runtime\Core\Message.cs" />
+    <Compile Include="uOSC\Runtime\Core\Parser.cs" />
+    <Compile Include="uOSC\Runtime\Core\Reader.cs" />
+    <Compile Include="uOSC\Runtime\Core\Thread.cs" />
+    <Compile Include="uOSC\Runtime\Core\Timestamp.cs" />
+    <Compile Include="uOSC\Runtime\Core\Udp.cs" />
+    <Compile Include="uOSC\Runtime\Core\Util.cs" />
+    <Compile Include="uOSC\Runtime\Core\Uwp\Thread.cs" />
+    <Compile Include="uOSC\Runtime\Core\Uwp\Udp.cs" />
+    <Compile Include="uOSC\Runtime\Core\Writer.cs" />
+    <Compile Include="uOSC\Runtime\uOscClient.cs" />
+    <Compile Include="uOSC\Runtime\uOscServer.cs" />
     <Compile Include="VMCSpout.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VMCSpoutSetting.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="uOSC\package.json" />
+    <None Include="uOSC\Runtime\uOSC.Runtime.asmdef" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
