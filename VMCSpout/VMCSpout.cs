@@ -2,11 +2,13 @@
 using System.Linq;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using VMC;
 using VMCMod;
 using Klak.Spout;
 using System.Reflection;
 using Newtonsoft.Json;
+using System;
 
 namespace VMCSpout
 {
@@ -56,12 +58,12 @@ namespace VMCSpout
             _shaders = assetBundle.LoadAllAssets<Shader>().ToDictionary(x => x.name);
             assetBundle.Unload(false);
 
-            _spoutResources = new SpoutResources();
+            _spoutResources = SpoutResources.CreateInstance<SpoutResources>();
             _spoutResources.blitShader = _shaders["Hidden/Klak/Spout/Blit"];
 
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (_currentCamera)
             {
@@ -100,7 +102,7 @@ namespace VMCSpout
 
         private void SpoutCameraInitialize()
         {
-            if(_currentCamera == null)
+            if(_currentCamera == null || _currentCamera.gameObject.GetComponent<Camera>() == null)
                 return;
 
             if (_mainCamRenderTexture == null || _mainCamRenderTexture.width != _settings.MainCamOutputWidth || _mainCamRenderTexture.height != _settings.MainCamOutputHeight)
@@ -114,18 +116,28 @@ namespace VMCSpout
                     enableRandomWrite = true
                 };
             }
+            if (_spoutRoot != null)
+                DestroyImmediate(_spoutRoot);
 
-            if(_currentCamera.gameObject.GetComponentsInChildren<SpoutSender>().Length > 0)
-            {
-                foreach (var spout in _currentCamera.gameObject.GetComponentsInChildren<SpoutSender>())
-                {
-                    DestroyImmediate(spout.gameObject);
-                }
-            }
+            _spoutRoot = new GameObject("VMCSpoutAdditionalCameras");
+            _spoutRoot.transform.position = Vector3.zero;
+            _spoutRoot.transform.rotation = Quaternion.identity;
 
             _mainCamSpoutCamera = Instantiate(_currentCamera);
             DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));
-            _mainCamSpoutCamera.transform.SetParent(_currentCamera.transform);
+            DestroyImmediate(_mainCamSpoutCamera.GetComponent("CameraFollower"));
+            DestroyImmediate(_mainCamSpoutCamera.GetComponent("CameraMirror"));
+            DestroyImmediate(_mainCamSpoutCamera.GetComponent("VirtualCamera"));
+
+            _mainCamSpoutCamera.Reset();
+
+            string complist = "Spout Camera Main :";
+            Component[] components = _mainCamSpoutCamera.GetComponents<Component>();
+            foreach (var component in components)
+                complist = complist + ", " + component.GetType().Name;
+             Debug.Log(complist);
+
+            _mainCamSpoutCamera.transform.SetParent(_spoutRoot.transform);
             _mainCamSpoutCamera.transform.localPosition = Vector3.zero;
             _mainCamSpoutCamera.transform.localRotation = Quaternion.identity;
             _mainCamSpoutCamera.tag = "Untagged";
@@ -138,6 +150,8 @@ namespace VMCSpout
 
             _mainCamSpoutCamera.targetTexture = _mainCamRenderTexture;
 
+            _mainCamSpoutCamera.gameObject.SetActive(true);
+
             _spoutSender = _mainCamSpoutCamera.gameObject.AddComponent<SpoutSender>();
 
             _spoutSender.SetResources(_spoutResources);
@@ -148,17 +162,24 @@ namespace VMCSpout
 
             _spoutSender.sourceTexture = _mainCamRenderTexture;
 
-            if(_spoutRoot != null)
-                DestroyImmediate(_spoutRoot);
-
-            _spoutRoot = new GameObject("VMCSpoutAdditionalCameras");
-            _spoutRoot.transform.position = Vector3.zero;
-            _spoutRoot.transform.rotation = Quaternion.identity;
-
             foreach (CameraSetting cs in _settings.AdditionalCameras)
             {
+
                 var spCamera = Instantiate(_currentCamera);
                 DestroyImmediate(spCamera.GetComponent("AudioListener"));
+                DestroyImmediate(spCamera.GetComponent("CameraFollower"));
+                DestroyImmediate(spCamera.GetComponent("CameraMirror"));
+                DestroyImmediate(spCamera.GetComponent("VirtualCamera"));
+
+                spCamera.Reset();
+
+                string complist2 = "Spout Camera " + cs.SpoutName + " :";
+                Component[] components2 = _mainCamSpoutCamera.GetComponents<Component>();
+                foreach (var component in components2)
+                    complist2 = complist2 + ", " + component.GetType().Name;
+                Debug.Log(complist2);
+
+
                 spCamera.transform.SetParent(_spoutRoot.transform);
                 spCamera.transform.position = _currentCamera.transform.position;
                 spCamera.transform.rotation = _currentCamera.transform.rotation;
@@ -172,8 +193,13 @@ namespace VMCSpout
 
                 var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
                 additionalCam.Initialize(cs, _spoutResources);
-            }
 
+                var _cameraCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                _cameraCube.transform.SetParent(spCamera.transform);
+                _cameraCube.transform.localPosition = Vector3.zero;
+                _cameraCube.transform.localRotation = Quaternion.identity;
+                _cameraCube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            }
         }
     }
 }

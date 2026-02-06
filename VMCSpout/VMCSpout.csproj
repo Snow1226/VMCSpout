@@ -45,6 +45,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.Postprocessing.Runtime">
+      <HintPath>..\..\..\..\Download\VirtualMotionCapture0.61b1\VirtualMotionCapture_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -63,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdditionalCamera.cs" />
+    <Compile Include="ComponentUtility.cs" />
     <Compile Include="uOSC\Runtime\Core\Bundle.cs" />
     <Compile Include="uOSC\Runtime\Core\DotNet\Thread.cs" />
     <Compile Include="uOSC\Runtime\Core\DotNet\Udp.cs" />
