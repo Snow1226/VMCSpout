@@ -40,16 +40,7 @@ namespace VMCSpout
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
             VMCEvents.OnCameraChanged += OnCameraChanged;
-
-            string dllDirectory = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
-            if (File.Exists(Path.Combine(dllDirectory, "VMCSpoutSetting.json")))
-                _settings = JsonConvert.DeserializeObject<VMCSpoutSetting>(File.ReadAllText(Path.Combine(dllDirectory, "VMCSpoutSetting.json")));
-
-            else
-            {
-                _settings = new VMCSpoutSetting();
-                File.WriteAllText(Path.Combine(dllDirectory, "VMCSpoutSetting.json"), JsonConvert.SerializeObject(_settings, Formatting.Indented));
-            }
+            LoadSetting();
         }
 
         private void Start()
@@ -74,6 +65,19 @@ namespace VMCSpout
 
         }
 
+        private void LoadSetting()
+        {
+            string dllDirectory = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
+            if (File.Exists(Path.Combine(dllDirectory, "VMCSpoutSetting.json")))
+                _settings = JsonConvert.DeserializeObject<VMCSpoutSetting>(File.ReadAllText(Path.Combine(dllDirectory, "VMCSpoutSetting.json")));
+
+            else
+            {
+                _settings = new VMCSpoutSetting();
+                File.WriteAllText(Path.Combine(dllDirectory, "VMCSpoutSetting.json"), JsonConvert.SerializeObject(_settings, Formatting.Indented));
+            }
+        }
+
         [OnSetting]
         public void OnSetting()
         {
@@ -84,6 +88,7 @@ namespace VMCSpout
             proc.StartInfo.FileName = Path.Combine(dllDirectory, "VMCSpoutSettingWPF.exe");
             proc.Start();
             proc.WaitForExit();
+            LoadSetting();
             SpoutCameraInitialize();
         }
 
