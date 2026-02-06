@@ -101,6 +101,8 @@ namespace VMCSpout
 
         private void OnCameraChanged(Camera currentCamera)
         {
+            if(_currentCamera == currentCamera)
+                return;
             _currentCamera = currentCamera;
             SpoutCameraInitialize();
         }
