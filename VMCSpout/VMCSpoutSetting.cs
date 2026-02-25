@@ -14,7 +14,7 @@ namespace VMCSpout
         public int MainCamOutputHeight { get; set; } = 1080;
 
         [JsonProperty]
-        public CameraSetting[] AdditionalCameras { get; set; }
+        public CameraSetting[] AdditionalCameras { get; set; } = new CameraSetting[0];
     }
 
     public class CameraSetting

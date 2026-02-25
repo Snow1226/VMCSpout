@@ -2,7 +2,6 @@
 using System.Linq;
 using System.IO;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 using VMC;
 using VMCMod;
 using Klak.Spout;
@@ -36,6 +35,9 @@ namespace VMCSpout
 
         private GameObject _spoutRoot = null;
 
+        private bool _displayCamCube = false;
+        private List<GameObject> _cameraCubes = new List<GameObject>();
+
         private void Awake()
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
@@ -65,12 +67,22 @@ namespace VMCSpout
 
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                _displayCamCube = !_displayCamCube;
+                foreach (var cube in _cameraCubes)
+                    cube.GetComponent<MeshRenderer>().enabled = _displayCamCube;
+            }
+
+        }
+
         private void LoadSetting()
         {
             string dllDirectory = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
             if (File.Exists(Path.Combine(dllDirectory, "VMCSpoutSetting.json")))
                 _settings = JsonConvert.DeserializeObject<VMCSpoutSetting>(File.ReadAllText(Path.Combine(dllDirectory, "VMCSpoutSetting.json")));
-
             else
             {
                 _settings = new VMCSpoutSetting();
@@ -129,6 +141,8 @@ namespace VMCSpout
             _spoutRoot = new GameObject("VMCSpoutAdditionalCameras");
             _spoutRoot.transform.position = Vector3.zero;
             _spoutRoot.transform.rotation = Quaternion.identity;
+            var scaleSync = _spoutRoot.gameObject.AddComponent<ScaleSync>();
+            scaleSync.TargetTransform = GameObject.Find("HandTrackerRoot").transform;
 
             _mainCamSpoutCamera = Instantiate(_currentCamera);
             DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));
@@ -169,6 +183,7 @@ namespace VMCSpout
 
             _spoutSender.sourceTexture = _mainCamRenderTexture;
 
+            _cameraCubes.Clear();
             foreach (CameraSetting cs in _settings.AdditionalCameras)
             {
 
@@ -206,6 +221,11 @@ namespace VMCSpout
                 _cameraCube.transform.localPosition = Vector3.zero;
                 _cameraCube.transform.localRotation = Quaternion.identity;
                 _cameraCube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                if(_displayCamCube)
+                    _cameraCube.GetComponent<MeshRenderer>().enabled = true;
+                else
+                    _cameraCube.GetComponent<MeshRenderer>().enabled = false;
+                _cameraCubes.Add(_cameraCube);
             }
         }
     }

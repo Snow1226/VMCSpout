@@ -59,6 +59,9 @@
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
     <Reference Include="VMCMod">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\VMCMod.dll</HintPath>
       <Private>False</Private>
@@ -67,6 +70,7 @@
   <ItemGroup>
     <Compile Include="AdditionalCamera.cs" />
     <Compile Include="ComponentUtility.cs" />
+    <Compile Include="ScaleSync.cs" />
     <Compile Include="uOSC\Runtime\Core\Bundle.cs" />
     <Compile Include="uOSC\Runtime\Core\DotNet\Thread.cs" />
     <Compile Include="uOSC\Runtime\Core\DotNet\Udp.cs" />
@@ -93,6 +97,12 @@
   <ItemGroup>
     <None Include="uOSC\package.json" />
     <None Include="uOSC\Runtime\uOSC.Runtime.asmdef" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VMCSpoutSettingWPF\VMCSpoutSettingWPF.csproj">
+      <Project>{797e7e7f-226c-449f-aa6a-16d650299d18}</Project>
+      <Name>VMCSpoutSettingWPF</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
