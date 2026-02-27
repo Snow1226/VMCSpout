@@ -13,7 +13,7 @@ namespace VMCSpout
 {
     [VMCPlugin(
     Name: "VMC Spout",
-    Version: "0.1.1",
+    Version: "0.1.2",
     Author: "snow",
     Description: "Spout2 sender for VMC",
     AuthorURL: "https://twitter.com/snow_mil",
@@ -61,8 +61,8 @@ namespace VMCSpout
             if (_currentCamera)
             {
                 _mainCamSpoutCamera.fieldOfView = _currentCamera.fieldOfView;
-                _mainCamSpoutCamera.transform.position = _currentCamera.transform.position;
-                _mainCamSpoutCamera.transform.rotation = _currentCamera.transform.rotation;
+                _mainCamSpoutCamera.transform.localPosition = _currentCamera.transform.localPosition;
+                _mainCamSpoutCamera.transform.localRotation = _currentCamera.transform.localRotation;
             }
 
         }
@@ -176,6 +176,7 @@ namespace VMCSpout
             _mainCamSpoutCamera.cullingMask = 1 << AvatarLayer;
             _mainCamSpoutCamera.stereoTargetEye = StereoTargetEyeMask.None;
             _mainCamSpoutCamera.depth = -1;
+            _mainCamSpoutCamera.nearClipPlane = 0.01f;
 
             _mainCamSpoutCamera.targetTexture = _mainCamRenderTexture;
 
@@ -220,6 +221,7 @@ namespace VMCSpout
                 spCamera.cullingMask = 1 << AvatarLayer;
                 spCamera.stereoTargetEye = StereoTargetEyeMask.None;
                 spCamera.depth = -1;
+                spCamera.nearClipPlane = 0.01f;
 
                 var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
                 additionalCam.Initialize(cs, _spoutResources);
