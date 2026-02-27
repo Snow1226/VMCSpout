@@ -75,6 +75,13 @@ namespace VMCSpout
                 foreach (var cube in _cameraCubes)
                     cube.GetComponent<MeshRenderer>().enabled = _displayCamCube;
             }
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                _settings.ScaleSyncWithCamera = !_settings.ScaleSyncWithCamera;
+                var scaleSync = _spoutRoot.gameObject.GetComponent<ScaleSync>();
+                if (scaleSync)
+                    scaleSync.IsSync = _settings.ScaleSyncWithCamera;
+            }
 
         }
 
@@ -143,6 +150,7 @@ namespace VMCSpout
             _spoutRoot.transform.rotation = Quaternion.identity;
             var scaleSync = _spoutRoot.gameObject.AddComponent<ScaleSync>();
             scaleSync.TargetTransform = GameObject.Find("HandTrackerRoot").transform;
+            scaleSync.IsSync = _settings.ScaleSyncWithCamera;
 
             _mainCamSpoutCamera = Instantiate(_currentCamera);
             DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));

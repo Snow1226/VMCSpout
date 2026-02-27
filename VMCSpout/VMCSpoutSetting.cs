@@ -7,6 +7,8 @@ namespace VMCSpout
     internal class VMCSpoutSetting
     {
         [JsonProperty]
+        public bool ScaleSyncWithCamera { get; set; } = true;
+        [JsonProperty]
         public string MainCamSpoutName { get; set; } = "VMC Spout Main";
         [JsonProperty]
         public int MainCamOutputWidth { get; set; } = 1920;

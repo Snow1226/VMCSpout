@@ -36,6 +36,7 @@ namespace VMCSpoutSettingWPF
 
             SpoutDataGrid.ItemsSource = _cameraSettings;
 
+            ScaleSyncCheckBox.IsChecked = _settings.ScaleSyncWithCamera;
             MainCameraSpoutNameTextBox.Text = _settings.MainCamSpoutName;
             MainCameraHeightTextBox.Text = _settings.MainCamOutputHeight.ToString();
             MainCameraWidthTextBox.Text = _settings.MainCamOutputWidth.ToString();
@@ -43,6 +44,7 @@ namespace VMCSpoutSettingWPF
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
+            _settings.ScaleSyncWithCamera = ScaleSyncCheckBox.IsChecked.Value;
             _settings.MainCamSpoutName = MainCameraSpoutNameTextBox.Text;
             _settings.MainCamOutputWidth = int.Parse(MainCameraWidthTextBox.Text);
             _settings.MainCamOutputHeight = int.Parse(MainCameraHeightTextBox.Text);

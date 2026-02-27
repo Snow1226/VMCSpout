@@ -31,6 +31,8 @@
         <TextBox x:Name="MainCameraWidthTextBox" Grid.Row="2" Grid.Column="1" VerticalAlignment="Stretch" Margin="0,2,0,2"/>
         <TextBox x:Name="MainCameraHeightTextBox" Grid.Row="3" Grid.Column="1" VerticalAlignment="Stretch"  Margin="0,2,0,2"/>
 
+        <CheckBox x:Name="ScaleSyncCheckBox" Content="Scale Sync with VMC" Grid.Column="2" VerticalAlignment="Center" IsChecked="True"/>
+
         <DataGrid x:Name="SpoutDataGrid" Grid.Row="5" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" SelectionMode="Single" SelectionUnit="FullRow" Grid.ColumnSpan="3">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Spout Name" Binding="{Binding SpoutName}" Width="*"/>

@@ -45,15 +45,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Unity.Postprocessing.Runtime">
-      <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\Unity.Postprocessing.Runtime.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -61,6 +59,7 @@
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="VMCMod">
       <HintPath>$(VMCDirectory)\VirtualMotionCapture_Data\Managed\VMCMod.dll</HintPath>
