@@ -38,6 +38,10 @@ namespace VMCSpout
         private bool _displayCamCube = false;
         private List<GameObject> _cameraCubes = new List<GameObject>();
 
+        private ScaleSync _thisScaleObject = null;
+        private GameObject _syncObject = null;
+        private bool _scaleSync = false;
+
         private void Awake()
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
@@ -75,14 +79,25 @@ namespace VMCSpout
                 foreach (var cube in _cameraCubes)
                     cube.GetComponent<MeshRenderer>().enabled = _displayCamCube;
             }
-            if (Input.GetKeyDown(KeyCode.S))
+            if (_syncObject == null)
+                _syncObject = GameObject.Find("AvatarSelfScaling");
+            else
             {
-                _settings.ScaleSyncWithCamera = !_settings.ScaleSyncWithCamera;
-                var scaleSync = _spoutRoot.gameObject.GetComponent<ScaleSync>();
-                if (scaleSync)
-                    scaleSync.IsSync = _settings.ScaleSyncWithCamera;
-            }
+                var sync = _syncObject.GetComponent("SelfScaling");
+                if (sync != null)
+                {
+                    FieldInfo info = sync.GetType().GetField("AvatarSelfScaling", BindingFlags.Public | BindingFlags.Instance);
+                    var result = (bool)info.GetValue(sync);
+                    if(result != _scaleSync)
+                    {
+                        Debug.Log("Change Sync");
+                        _scaleSync = result;
+                        if(_thisScaleObject != null)        
+                            _thisScaleObject.IsSync = !_scaleSync;
+                    }
+                }
 
+            }
         }
 
         private void LoadSetting()
@@ -118,6 +133,7 @@ namespace VMCSpout
                 renderer.gameObject.layer = AvatarLayer;
         }
 
+
         private void OnCameraChanged(Camera currentCamera)
         {
             if(_currentCamera == currentCamera)
@@ -148,9 +164,8 @@ namespace VMCSpout
             _spoutRoot = new GameObject("VMCSpoutAdditionalCameras");
             _spoutRoot.transform.position = Vector3.zero;
             _spoutRoot.transform.rotation = Quaternion.identity;
-            var scaleSync = _spoutRoot.gameObject.AddComponent<ScaleSync>();
-            scaleSync.TargetTransform = GameObject.Find("HandTrackerRoot").transform;
-            scaleSync.IsSync = _settings.ScaleSyncWithCamera;
+            _thisScaleObject = _spoutRoot.gameObject.AddComponent<ScaleSync>();
+            _thisScaleObject.TargetTransform = GameObject.Find("HandTrackerRoot").transform;
 
             _mainCamSpoutCamera = Instantiate(_currentCamera);
             DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));
