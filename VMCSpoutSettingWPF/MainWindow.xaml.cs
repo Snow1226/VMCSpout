@@ -39,6 +39,11 @@ namespace VMCSpoutSettingWPF
             MainCameraSpoutNameTextBox.Text = _settings.MainCamSpoutName;
             MainCameraHeightTextBox.Text = _settings.MainCamOutputHeight.ToString();
             MainCameraWidthTextBox.Text = _settings.MainCamOutputWidth.ToString();
+
+            UseMirrorCheckBox.IsChecked = _settings.UseMirror;
+            MirrorResolutionTextBox.Text = _settings.MirrorResolution.ToString();
+            MirrorWidthTextBox.Text = _settings.MirrorWidth.ToString();
+            MirrorHeightTextBox.Text = _settings.MirrorHeight.ToString();
         }
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -46,6 +51,12 @@ namespace VMCSpoutSettingWPF
             _settings.MainCamSpoutName = MainCameraSpoutNameTextBox.Text;
             _settings.MainCamOutputWidth = int.Parse(MainCameraWidthTextBox.Text);
             _settings.MainCamOutputHeight = int.Parse(MainCameraHeightTextBox.Text);
+
+            _settings.UseMirror = UseMirrorCheckBox.IsChecked.Value;
+            _settings.MirrorResolution = int.Parse(MirrorResolutionTextBox.Text);
+            _settings.MirrorWidth = float.Parse(MirrorWidthTextBox.Text);
+            _settings.MirrorHeight = float.Parse(MirrorHeightTextBox.Text);
+
             _settings.AdditionalCameras = new CameraSetting[_cameraSettings.Count];
             for(int i=0; i < _cameraSettings.Count; i++)
             {

@@ -19,6 +19,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="120"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -27,11 +29,21 @@
         <Label Content="   Width     :" Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
         <Label Content="   Height    :" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Left" />
 
+        <Label Content="Mirror Resolution:" Grid.Row="1" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+        <Label Content="Mirror Width :" Grid.Row="2" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" />
+        <Label Content="Mirror Height :" Grid.Row="3" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Right" />
+
         <TextBox x:Name="MainCameraSpoutNameTextBox" Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch"  Margin="0,2,0,2"/>
         <TextBox x:Name="MainCameraWidthTextBox" Grid.Row="2" Grid.Column="1" VerticalAlignment="Stretch" Margin="0,2,0,2"/>
         <TextBox x:Name="MainCameraHeightTextBox" Grid.Row="3" Grid.Column="1" VerticalAlignment="Stretch"  Margin="0,2,0,2"/>
 
-        <DataGrid x:Name="SpoutDataGrid" Grid.Row="5" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" SelectionMode="Single" SelectionUnit="FullRow" Grid.ColumnSpan="3">
+        <CheckBox x:Name="UseMirrorCheckBox" Content="Use Mirror" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,2,30,2"/>
+        <TextBox x:Name="MirrorResolutionTextBox" Grid.Row="1" Grid.Column="4" VerticalAlignment="Stretch" Margin="0,2,0,2"/>
+        <TextBox x:Name="MirrorWidthTextBox" Grid.Row="2" Grid.Column="4" VerticalAlignment="Stretch"  Margin="0,2,0,2"/>
+        <TextBox x:Name="MirrorHeightTextBox" Grid.Row="3" Grid.Column="4" VerticalAlignment="Stretch"  Margin="0,2,0,2"/>
+
+
+        <DataGrid x:Name="SpoutDataGrid" Grid.Row="5" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" SelectionMode="Single" SelectionUnit="FullRow" Grid.ColumnSpan="5">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Spout Name" Binding="{Binding SpoutName}" Width="*"/>
                 <DataGridTextColumn Header="VMCP Port" Binding="{Binding Port}" Width="*"/>
@@ -40,6 +52,6 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Button x:Name="ApplyButton" Content="Apply" Grid.Row="6" Grid.Column="2" Margin="2,2,2,2" Click="ApplyButton_Click" Width="120" HorizontalAlignment="Right"/>
+        <Button x:Name="ApplyButton" Content="Apply" Grid.Row="6" Grid.Column="4" Margin="2,2,2,2" Click="ApplyButton_Click" Width="120" HorizontalAlignment="Right"/>
     </Grid>
 </Window>

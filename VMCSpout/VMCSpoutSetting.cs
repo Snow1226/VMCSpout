@@ -14,6 +14,16 @@ namespace VMCSpout
         public int MainCamOutputHeight { get; set; } = 1080;
 
         [JsonProperty]
+        public bool UseMirror { get; set; } = true;
+        [JsonProperty]
+        public int MirrorResolution { get; set; } = 1024;
+
+        [JsonProperty]
+        public float MirrorWidth { get; set; } = 3;
+        [JsonProperty]
+        public float MirrorHeight { get; set; } = 2;
+
+        [JsonProperty]
         public CameraSetting[] AdditionalCameras { get; set; } = new CameraSetting[0];
     }
 

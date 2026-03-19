@@ -330,11 +330,9 @@ ASALocalRun/
 .mfractor/
 /CameraPlus/packages.config
 
-/UnityProject/Temp
-/UnityProject/Assets/AssetBundles/
-/UnityProject/Library/
-/UnityProject/UserSettings/
-/EffectUnityProject/Temp
-/EffectUnityProject/Assets/AssetBundles/
-/EffectUnityProject/Library/
-/EffectUnityProject/UserSettings/
+/ShaderProject/Temp
+/ShaderProject/AssetBundles/
+/ShaderProject/Library/
+/ShaderProject/UserSettings/
+
+sync.ffs_db
