@@ -93,6 +93,10 @@ namespace VMCSpout
         {
             if (target != null && renderCamera != null)
             {
+                _center.x = target.position.x;
+                _center.y = 0;
+                _center.z = target.position.z;
+
                 _center = Vector3.zero;
 
                 var canvasRect = _rawImage.canvas.GetComponent<RectTransform>();
