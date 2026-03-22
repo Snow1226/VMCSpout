@@ -41,6 +41,8 @@ namespace VMCSpout
 
         private GameObject _hipsObject = null;
 
+        private GameObject _debugFloor;
+
         private void Awake()
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
@@ -56,6 +58,12 @@ namespace VMCSpout
 
             _spoutResources = SpoutResources.CreateInstance<SpoutResources>();
             _spoutResources.blitShader = VMCSpoutStatic.shaders["Hidden/Klak/Spout/Blit"];
+
+            _debugFloor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            _debugFloor.transform.position = Vector3.zero;
+            _debugFloor.transform.localScale = new Vector3(0.3f, 1, 0.2f);
+            _debugFloor.layer = VMCSpoutStatic.AvatarLayer;
+            _debugFloor.SetActive(false);
         }
 
         private void LateUpdate()
@@ -77,6 +85,11 @@ namespace VMCSpout
                 foreach (var cube in _cameraCubes)
                     cube.GetComponent<MeshRenderer>().enabled = _displayCamCube;
             }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                _debugFloor.SetActive(!_debugFloor.activeSelf);
+            }
+
             if (_syncObject == null)
                 _syncObject = GameObject.Find("AvatarSelfScaling");
             else
