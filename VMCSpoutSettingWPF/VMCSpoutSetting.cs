@@ -13,6 +13,16 @@ namespace VMCSpoutSettingWPF
         public int MainCamOutputHeight { get; set; } = 1080;
 
         [JsonProperty]
+        public bool UseMirror { get; set; } = true;
+        [JsonProperty]
+        public int MirrorResolution { get; set; } = 1024;
+
+        [JsonProperty]
+        public float MirrorWidth { get; set; } = 3;
+        [JsonProperty]
+        public float MirrorHeight { get; set; } = 2;
+
+        [JsonProperty]
         public CameraSetting[] AdditionalCameras { get; set; } = new CameraSetting[0] ;
     }
 
@@ -26,6 +36,7 @@ namespace VMCSpoutSettingWPF
         public int OutputWidth { get; set; } = 1920;
         [JsonProperty]
         public int OutputHeight { get; set; } = 1080;
+
 
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 using VMC;
 using VMCMod;
 using Klak.Spout;
@@ -26,9 +27,6 @@ namespace VMCSpout
 
         private RenderTexture _mainCamRenderTexture;
         private Camera _mainCamSpoutCamera;
-        private Dictionary<string, Shader> _shaders = new Dictionary<string, Shader>();
-
-        private const int AvatarLayer = 3;
 
         private VMCSpoutSetting _settings = new VMCSpoutSetting();
         private Camera _currentCamera;
@@ -40,7 +38,8 @@ namespace VMCSpout
 
         private ScaleSync _thisScaleObject = null;
         private GameObject _syncObject = null;
-        private bool _scaleSync = false;
+
+        private GameObject _hipsObject = null;
 
         private void Awake()
         {
@@ -52,12 +51,11 @@ namespace VMCSpout
         private void Start()
         {
             AssetBundle assetBundle = AssetBundle.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("VMCSpout.Resources.shader"));
-            _shaders = assetBundle.LoadAllAssets<Shader>().ToDictionary(x => x.name);
+            VMCSpoutStatic.shaders = assetBundle.LoadAllAssets<Shader>().ToDictionary(x => x.name);
             assetBundle.Unload(false);
 
             _spoutResources = SpoutResources.CreateInstance<SpoutResources>();
-            _spoutResources.blitShader = _shaders["Hidden/Klak/Spout/Blit"];
-
+            _spoutResources.blitShader = VMCSpoutStatic.shaders["Hidden/Klak/Spout/Blit"];
         }
 
         private void LateUpdate()
@@ -84,16 +82,15 @@ namespace VMCSpout
             else
             {
                 var sync = _syncObject.GetComponent("SelfScaling");
-                if (sync != null)
+                if (sync != null && _thisScaleObject != null)
                 {
                     FieldInfo info = sync.GetType().GetField("AvatarSelfScaling", BindingFlags.Public | BindingFlags.Instance);
                     var result = (bool)info.GetValue(sync);
-                    if(result != _scaleSync)
+                    if(result == _thisScaleObject.IsSync)
                     {
                         Debug.Log("Change Sync");
-                        _scaleSync = result;
                         if(_thisScaleObject != null)        
-                            _thisScaleObject.IsSync = !_scaleSync;
+                            _thisScaleObject.IsSync = !result;
                     }
                 }
 
@@ -130,7 +127,10 @@ namespace VMCSpout
         {
             Renderer[] renderers = currentModel.GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
-                renderer.gameObject.layer = AvatarLayer;
+                renderer.gameObject.layer = VMCSpoutStatic.AvatarLayer;
+
+            _hipsObject = currentModel.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Hips).gameObject;
+            SpoutCameraInitialize();
         }
 
 
@@ -188,7 +188,7 @@ namespace VMCSpout
 
             _mainCamSpoutCamera.clearFlags = CameraClearFlags.SolidColor;
             _mainCamSpoutCamera.backgroundColor = new Color(0, 0, 0, 0);
-            _mainCamSpoutCamera.cullingMask = 1 << AvatarLayer;
+            _mainCamSpoutCamera.cullingMask = 1 << VMCSpoutStatic.AvatarLayer;
             _mainCamSpoutCamera.stereoTargetEye = StereoTargetEyeMask.None;
             _mainCamSpoutCamera.depth = -1;
             _mainCamSpoutCamera.nearClipPlane = 0.01f;
@@ -233,10 +233,13 @@ namespace VMCSpout
 
                 spCamera.clearFlags = CameraClearFlags.SolidColor;
                 spCamera.backgroundColor = new Color(0, 0, 0, 0);
-                spCamera.cullingMask = 1 << AvatarLayer;
+                spCamera.cullingMask = 1 << VMCSpoutStatic.AvatarLayer;
                 spCamera.stereoTargetEye = StereoTargetEyeMask.None;
                 spCamera.depth = -1;
                 spCamera.nearClipPlane = 0.01f;
+
+                if(_settings.UseMirror)
+                    CreateMirror(spCamera);
 
                 var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
                 additionalCam.Initialize(cs, _spoutResources);
@@ -252,6 +255,38 @@ namespace VMCSpout
                     _cameraCube.GetComponent<MeshRenderer>().enabled = false;
                 _cameraCubes.Add(_cameraCube);
             }
+        }
+
+        private void CreateMirror(Camera camera)
+        {
+            var canvas = new GameObject("MirrorCanvas").AddComponent<Canvas>();
+            canvas.transform.SetParent(camera.transform);
+            canvas.gameObject.layer = VMCSpoutStatic.AvatarLayer;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = camera;
+
+            CanvasScaler canvasScaler = canvas.gameObject.AddComponent<CanvasScaler>();
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            canvasScaler.scaleFactor = 1;
+            canvasScaler.referencePixelsPerUnit = 100;
+
+            RawImage rawImage = new GameObject("MirrorRawImage").AddComponent<RawImage>();
+            rawImage.transform.SetParent(canvas.transform);
+            rawImage.gameObject.layer = VMCSpoutStatic.AvatarLayer;
+
+            rawImage.transform.localPosition = Vector3.zero;
+            rawImage.transform.localRotation = Quaternion.identity;
+            rawImage.transform.localScale = Vector3.one;
+
+            var mirror = rawImage.gameObject.AddComponent<Mirror>();
+            if(_hipsObject == null)
+                mirror.target = _spoutRoot.transform ;
+            else
+                mirror.target = _hipsObject.transform;
+
+            mirror.renderCamera = camera;
+            mirror.Initialize(_settings.MirrorResolution,_settings.MirrorWidth,_settings.MirrorHeight);
+
         }
     }
 }
