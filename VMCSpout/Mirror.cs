@@ -82,8 +82,6 @@ namespace VMCSpout
         {
             if (target != null && renderCamera != null)
             {
-                UpdateMirrorCenter();
-
                 if(_mirrorCamera != null && mirrorTexture != null)
                 {
                     SetReflectionCamera();
@@ -108,34 +106,47 @@ namespace VMCSpout
         {
             if (target != null && renderCamera != null)
             {
-                UpdateMirrorCenter();
+                if (setting.FollowMirrorPosition)
+                {
+                    _center.x = target.position.x;
+                    _center.y = 0;
+                    _center.z = target.position.z;
+
+                    _centerRotation.y = target.eulerAngles.y;
+                }
+                else
+                {
+                    _center.x = setting.MirrorPositionX;
+                    _center.y = setting.MirrorPositionY;
+                    _center.z = setting.MirrorPositionZ;
+
+                    _centerRotation.y = setting.MirrorRotationY;
+                }
 
                 var canvasRect = _rawImage.canvas.GetComponent<RectTransform>();
                 var rect = _rawImage.gameObject.GetComponent<RectTransform>();
-                var mirrorRotation = Quaternion.Euler(_centerRotation) * Quaternion.Euler(_mirrorEular);
 
                 var screenPos = RectTransformUtility.WorldToScreenPoint(renderCamera, _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, renderCamera, out var localPoint);
                 rect.localPosition = localPoint;
 
-                rect.localRotation = Quaternion.Inverse(renderCamera.transform.rotation) * mirrorRotation;
+                rect.localRotation = Quaternion.Inverse(renderCamera.transform.rotation) * Quaternion.Euler(_mirrorEular);
 
                 var leftWorld = new Vector3(-_mirrorRectWidth / 2, 0, 0);
                 var rightWorld = new Vector3(_mirrorRectWidth / 2, 0, 0);
                 var backWorld = new Vector3(0, 0, -_mirrorRectHeight / 2);
                 var forwardWorld = new Vector3(0, 0, _mirrorRectHeight / 2);
-                var centerRotation = Quaternion.Euler(_centerRotation);
 
-                var imageSizePointLeft = RectTransformUtility.WorldToScreenPoint(renderCamera, centerRotation * leftWorld + _center);
+                var imageSizePointLeft = RectTransformUtility.WorldToScreenPoint(renderCamera, leftWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointLeft, renderCamera, out var localLeft);
 
-                var imageSizePointRight = RectTransformUtility.WorldToScreenPoint(renderCamera, centerRotation * rightWorld + _center);
+                var imageSizePointRight = RectTransformUtility.WorldToScreenPoint(renderCamera, rightWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointRight, renderCamera, out var localRight);
 
-                var imageSizePointBack = RectTransformUtility.WorldToScreenPoint(renderCamera, centerRotation * backWorld + _center);
+                var imageSizePointBack = RectTransformUtility.WorldToScreenPoint(renderCamera,  backWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointBack, renderCamera, out var localBack);
 
-                var imageSizePointForward = RectTransformUtility.WorldToScreenPoint(renderCamera, centerRotation * forwardWorld + _center);
+                var imageSizePointForward = RectTransformUtility.WorldToScreenPoint(renderCamera, forwardWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointForward, renderCamera, out var localForward);
 
                 rect.sizeDelta = new Vector2(Vector2.Distance(localLeft, localRight), Vector2.Distance(localBack, localForward));
@@ -144,8 +155,7 @@ namespace VMCSpout
 
         private void SetReflectionCamera()
         {
-            _targetFloorObject.transform.position = _center;
-            _targetFloorObject.transform.rotation = Quaternion.Euler(_centerRotation);
+            _targetFloorObject.transform.position = new Vector3(target.position.x, 0, target.position.z);
 
             Vector3 planeNormal = _targetFloorObject.transform.up;
             Vector3 planePos = _targetFloorObject.transform.position;
@@ -160,30 +170,6 @@ namespace VMCSpout
             Vector4 clipPlane = new Vector4(cNormal.x, cNormal.y, cNormal.z, -Vector3.Dot(cPos, cNormal));
 
             _mirrorCamera.projectionMatrix = renderCamera.CalculateObliqueMatrix(clipPlane);
-        }
-
-        private void UpdateMirrorCenter()
-        {
-            if (setting.FollowMirrorPosition)
-            {
-                _center.x = target.position.x;
-                _center.y = 0;
-                _center.z = target.position.z;
-
-                _centerRotation.x = 0;
-                _centerRotation.y = target.eulerAngles.y;
-                _centerRotation.z = 0;
-            }
-            else
-            {
-                _center.x = setting.MirrorPositionX;
-                _center.y = setting.MirrorPositionY;
-                _center.z = setting.MirrorPositionZ;
-
-                _centerRotation.x = 0;
-                _centerRotation.y = setting.MirrorRotationY;
-                _centerRotation.z = 0;
-            }
         }
 
         private Matrix4x4 CalcReflectionMatrix(Vector4 n)
