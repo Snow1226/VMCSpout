@@ -10,6 +10,7 @@ namespace VMCSpout
 {
     public class Mirror : MonoBehaviour
     {
+        public VMCSpoutSetting setting;
         public Transform target;
         private GameObject _targetFloorObject;
         public Camera renderCamera;
@@ -19,6 +20,7 @@ namespace VMCSpout
 
         private RawImage _rawImage;
         private Vector3 _center = Vector3.zero;
+        private Vector3 _centerRotation = Vector3.zero;
         private Vector3 _mirrorEular = new Vector3(90, 0, 0);
         private float _mirrorRectWidth = 10f;
         private float _mirrorRectHeight = 10f;
@@ -26,6 +28,8 @@ namespace VMCSpout
 
         private Camera _mirrorCamera;
         private readonly int _texId = Shader.PropertyToID("_MainTex");
+
+        private bool _isDebug = false;
 
         private void Awake()
         {
@@ -87,17 +91,37 @@ namespace VMCSpout
                     mirrorMaterial.SetTexture(_texId, mirrorTexture);
                 }
             }
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                _isDebug = !_isDebug;
+                if (_isDebug)
+                    _rawImage.material = null;
+                else
+                    _rawImage.material = mirrorMaterial;
+            }
         }
 
         private void LateUpdate()
         {
             if (target != null && renderCamera != null)
             {
-                _center.x = target.position.x;
-                _center.y = 0;
-                _center.z = target.position.z;
+                if (setting.FollowMirrorPosition)
+                {
+                    _center.x = target.position.x;
+                    _center.y = 0;
+                    _center.z = target.position.z;
 
-                _center = Vector3.zero;
+                    _centerRotation.y = target.eulerAngles.y;
+                }
+                else
+                {
+                    _center.x = setting.MirrorPositionX;
+                    _center.y = setting.MirrorPositionY;
+                    _center.z = setting.MirrorPositionZ;
+
+                    _centerRotation.y = setting.MirrorRotationY;
+                }
 
                 var canvasRect = _rawImage.canvas.GetComponent<RectTransform>();
                 var rect = _rawImage.gameObject.GetComponent<RectTransform>();
@@ -113,16 +137,16 @@ namespace VMCSpout
                 var backWorld = new Vector3(0, 0, -_mirrorRectHeight / 2);
                 var forwardWorld = new Vector3(0, 0, _mirrorRectHeight / 2);
 
-                var imageSizePointLeft = RectTransformUtility.WorldToScreenPoint(renderCamera, leftWorld);
+                var imageSizePointLeft = RectTransformUtility.WorldToScreenPoint(renderCamera, Quaternion.Euler(0, _centerRotation.y, 0) * leftWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointLeft, renderCamera, out var localLeft);
 
-                var imageSizePointRight = RectTransformUtility.WorldToScreenPoint(renderCamera, rightWorld);
+                var imageSizePointRight = RectTransformUtility.WorldToScreenPoint(renderCamera, Quaternion.Euler(0, _centerRotation.y, 0) * rightWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointRight, renderCamera, out var localRight);
 
-                var imageSizePointBack = RectTransformUtility.WorldToScreenPoint(renderCamera, backWorld);
+                var imageSizePointBack = RectTransformUtility.WorldToScreenPoint(renderCamera, Quaternion.Euler(0, _centerRotation.y, 0) * backWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointBack, renderCamera, out var localBack);
 
-                var imageSizePointForward = RectTransformUtility.WorldToScreenPoint(renderCamera, forwardWorld);
+                var imageSizePointForward = RectTransformUtility.WorldToScreenPoint(renderCamera, Quaternion.Euler(0, _centerRotation.y, 0) * forwardWorld + _center);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, imageSizePointForward, renderCamera, out var localForward);
 
                 rect.sizeDelta = new Vector2(Vector2.Distance(localLeft, localRight), Vector2.Distance(localBack, localForward));

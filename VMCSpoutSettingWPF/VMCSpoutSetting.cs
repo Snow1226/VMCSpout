@@ -21,6 +21,16 @@ namespace VMCSpoutSettingWPF
         public float MirrorWidth { get; set; } = 3;
         [JsonProperty]
         public float MirrorHeight { get; set; } = 2;
+        [JsonProperty]
+        public bool FollowMirrorPosition { get; set; } = false;
+        [JsonProperty]
+        public float MirrorPositionX { get; set; } = 0;
+        [JsonProperty]
+        public float MirrorPositionY { get; set; } = 0;
+        [JsonProperty]
+        public float MirrorPositionZ { get; set; } = 0;
+        [JsonProperty]
+        public float MirrorRotationY { get; set; } = 0;
 
         [JsonProperty]
         public CameraSetting[] AdditionalCameras { get; set; } = new CameraSetting[0] ;

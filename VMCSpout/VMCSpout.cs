@@ -14,7 +14,7 @@ namespace VMCSpout
 {
     [VMCPlugin(
     Name: "VMC Spout",
-    Version: "0.1.3",
+    Version: "0.1.4",
     Author: "snow",
     Description: "Spout2 sender for VMC",
     AuthorURL: "https://twitter.com/snow_mil",
@@ -41,8 +41,6 @@ namespace VMCSpout
 
         private GameObject _hipsObject = null;
 
-        private GameObject _debugFloor;
-
         private void Awake()
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
@@ -58,12 +56,6 @@ namespace VMCSpout
 
             _spoutResources = SpoutResources.CreateInstance<SpoutResources>();
             _spoutResources.blitShader = VMCSpoutStatic.shaders["Hidden/Klak/Spout/Blit"];
-
-            _debugFloor = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            _debugFloor.transform.position = Vector3.zero;
-            _debugFloor.transform.localScale = new Vector3(0.3f, 1, 0.2f);
-            _debugFloor.layer = VMCSpoutStatic.AvatarLayer;
-            _debugFloor.SetActive(false);
         }
 
         private void LateUpdate()
@@ -84,10 +76,6 @@ namespace VMCSpout
                 _displayCamCube = !_displayCamCube;
                 foreach (var cube in _cameraCubes)
                     cube.GetComponent<MeshRenderer>().enabled = _displayCamCube;
-            }
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                _debugFloor.SetActive(!_debugFloor.activeSelf);
             }
 
             if (_syncObject == null)
@@ -292,7 +280,8 @@ namespace VMCSpout
             rawImage.transform.localScale = Vector3.one;
 
             var mirror = rawImage.gameObject.AddComponent<Mirror>();
-            if(_hipsObject == null)
+            mirror.setting = _settings;
+            if (_hipsObject == null)
                 mirror.target = _spoutRoot.transform ;
             else
                 mirror.target = _hipsObject.transform;

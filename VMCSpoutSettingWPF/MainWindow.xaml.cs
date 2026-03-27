@@ -44,6 +44,13 @@ namespace VMCSpoutSettingWPF
             MirrorResolutionTextBox.Text = _settings.MirrorResolution.ToString();
             MirrorWidthTextBox.Text = _settings.MirrorWidth.ToString();
             MirrorHeightTextBox.Text = _settings.MirrorHeight.ToString();
+
+            UseMirrorFollowCheckBox.IsChecked = _settings.FollowMirrorPosition;
+            MirrorCenterPositionXTextBox.Text = _settings.MirrorPositionX.ToString();
+            MirrorCenterPositionYTextBox.Text = _settings.MirrorPositionY.ToString();
+            MirrorCenterPositionZTextBox.Text = _settings.MirrorPositionZ.ToString();
+
+            MirrorCenterRotationYTextBox.Text = _settings.MirrorRotationY.ToString();
         }
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -56,6 +63,12 @@ namespace VMCSpoutSettingWPF
             _settings.MirrorResolution = int.Parse(MirrorResolutionTextBox.Text);
             _settings.MirrorWidth = float.Parse(MirrorWidthTextBox.Text);
             _settings.MirrorHeight = float.Parse(MirrorHeightTextBox.Text);
+
+            _settings.FollowMirrorPosition = UseMirrorFollowCheckBox.IsChecked.Value;
+            _settings.MirrorPositionX = float.Parse(MirrorCenterPositionXTextBox.Text);
+            _settings.MirrorPositionY = float.Parse(MirrorCenterPositionYTextBox.Text); 
+            _settings.MirrorPositionZ = float.Parse(MirrorCenterPositionZTextBox.Text); 
+            _settings.MirrorRotationY = float.Parse(MirrorCenterRotationYTextBox.Text);
 
             _settings.AdditionalCameras = new CameraSetting[_cameraSettings.Count];
             for(int i=0; i < _cameraSettings.Count; i++)
