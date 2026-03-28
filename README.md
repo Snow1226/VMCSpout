@@ -1,6 +1,7 @@
 ## VMCSpout
 [Virtual Motion Capture](https://github.com/sh-akira/VirtualMotionCapture) 用Mod
 VMC内にカメラを追加し、SpoutSenderを使用して映像を送信します。
+ModはFANBOX支援版限定の機能です。  
 
 SpoutライブラリはKlakSpoutを使用
 [KlakSpout](https://github.com/keijiro/KlakSpout)
