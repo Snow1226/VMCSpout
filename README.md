@@ -8,15 +8,22 @@ SpoutライブラリはKlakSpoutを使用
 
 ### Install
 [Release](https://github.com/Snow1226/VMCSpout/releases)から最新版をダウンロードし、  
-Zipファイルの中身をフォルダごとVirtualMotionCaptureのフォルダに入れてください。  
+ZipファイルをVirtualMotionCaptureのフォルダに展開してください。
   
 VMC内の設定から設定画面が呼び出せない場合は、  
 Windowsに起動を止められているため、  
-VirtualMotionCapture/Mods/VMCSpoutにあるVMCSpoutSettingWPF.exeを１回手動で起動してください。
+**VirtualMotionCapture/Mods/VMCSpoutにあるVMCSpoutSettingWPF.exeを１回手動で起動してください。**
 
 ### Setting
   
 <img width="584" height="441" alt="image" src="https://github.com/user-attachments/assets/6c315c27-d363-4394-a176-8795ba2fe45f" />
+
+Spout SenderはVMCの画面と同じ画各を「VMC Spout Main」  
+追加カメラを「VMC Spout *」（*は数字  
+制御が若干異なるため、CameraPlusに映像を連携させるときはMainを使用せず、追加カメラのほうを使用してください。  
+
+- VMC Spout Main : OBSに送信して正面カメラや、デスクトップ配信用  
+- VMC Spout 1 ~ : CameraPlus宛送信用  
    
 | 設定名 |  |
 | ---- | ---- |
