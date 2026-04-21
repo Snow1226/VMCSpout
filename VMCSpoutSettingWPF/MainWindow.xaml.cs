@@ -13,7 +13,7 @@ namespace VMCSpoutSettingWPF
     {
         private VMCSpoutSetting _settings = new VMCSpoutSetting();
         private ObservableCollection<CameraSetting> _cameraSettings;
-
+        private CameraPlusSetup _cameraPlusSetup;
         public MainWindow()
         {
             InitializeComponent();
@@ -46,6 +46,7 @@ namespace VMCSpoutSettingWPF
             MirrorHeightTextBox.Text = _settings.MirrorHeight.ToString();
 
             UseMirrorFollowCheckBox.IsChecked = _settings.FollowMirrorPosition;
+            MirrorIntensityTextBox.Text = _settings.MirrorIntensity.ToString();
             MirrorCenterPositionXTextBox.Text = _settings.MirrorPositionX.ToString();
             MirrorCenterPositionYTextBox.Text = _settings.MirrorPositionY.ToString();
             MirrorCenterPositionZTextBox.Text = _settings.MirrorPositionZ.ToString();
@@ -60,6 +61,7 @@ namespace VMCSpoutSettingWPF
             _settings.MainCamOutputHeight = int.Parse(MainCameraHeightTextBox.Text);
 
             _settings.UseMirror = UseMirrorCheckBox.IsChecked.Value;
+            _settings.MirrorIntensity = float.Parse(MirrorIntensityTextBox.Text);
             _settings.MirrorResolution = int.Parse(MirrorResolutionTextBox.Text);
             _settings.MirrorWidth = float.Parse(MirrorWidthTextBox.Text);
             _settings.MirrorHeight = float.Parse(MirrorHeightTextBox.Text);
@@ -79,6 +81,29 @@ namespace VMCSpoutSettingWPF
             File.WriteAllText(Path.Combine(startupPath, "VMCSpoutSetting.json"), JsonConvert.SerializeObject(_settings, Formatting.Indented));
 
             Application.Current.Shutdown();
+        }
+
+        private void CameraPlusSetupButton_Click(object sender, RoutedEventArgs e)
+        {
+            _cameraPlusSetup = new CameraPlusSetup();
+            _cameraPlusSetup.Owner = this;
+            if (_cameraPlusSetup.ShowDialog() == true)
+            {
+                int spoutCount = _cameraPlusSetup.ResultSpoutCount;
+                _cameraSettings.Clear();
+                for (int i = 0; i < spoutCount; i++)
+                {
+                    _cameraSettings.Add(new CameraSetting()
+                    {
+                        SpoutName = $"VMC Spout {i + 1}",
+                        OutputWidth = int.Parse(MainCameraWidthTextBox.Text),
+                        OutputHeight = int.Parse(MainCameraHeightTextBox.Text),
+                        Port = 39640 + i
+                    });
+                }
+                SpoutDataGrid.ItemsSource = _cameraSettings;
+
+            }
         }
     }
 }

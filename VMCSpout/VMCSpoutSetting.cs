@@ -17,6 +17,9 @@ namespace VMCSpout
         public bool UseMirror { get; set; } = true;
         [JsonProperty]
         public int MirrorResolution { get; set; } = 1024;
+        [JsonProperty]
+        public float MirrorIntensity { get; set; } = 0.5f;
+
 
         [JsonProperty]
         public float MirrorWidth { get; set; } = 3;

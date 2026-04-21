@@ -74,7 +74,7 @@ namespace VMCSpout
 
             mirrorMaterial = new Material(VMCSpoutStatic.shaders["MirrorReflection"]);
             mirrorMaterial.SetTexture(_texId, mirrorTexture);
-
+            mirrorMaterial.SetColor("_Color", new Color(0.7f, 0.7f, 0.7f, setting.MirrorIntensity));
             _rawImage.material = mirrorMaterial;
         }
 
