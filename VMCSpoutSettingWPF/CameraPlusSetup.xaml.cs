@@ -98,8 +98,7 @@ namespace VMCSpoutSettingWPF
 
                         var vmcElement = jsonDynamic["VMCProtocol"];
                         vmcProtocolElements vmc = vmcElement?.ToObject<vmcProtocolElements>() ?? new vmcProtocolElements();
-                        vmc.mode = VMCProtocolMode.Sender;
-                        vmc.port = 39640 + i;
+                        vmc.mode = VMCProtocolMode.Disable;
                         jsonDynamic.VMCProtocol = JObject.FromObject(vmc);
 
                         var spoutElement = jsonDynamic["Spout"];

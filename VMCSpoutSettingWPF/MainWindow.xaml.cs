@@ -98,7 +98,6 @@ namespace VMCSpoutSettingWPF
                         SpoutName = $"VMC Spout {i + 1}",
                         OutputWidth = int.Parse(MainCameraWidthTextBox.Text),
                         OutputHeight = int.Parse(MainCameraHeightTextBox.Text),
-                        Port = 39640 + i
                     });
                 }
                 SpoutDataGrid.ItemsSource = _cameraSettings;

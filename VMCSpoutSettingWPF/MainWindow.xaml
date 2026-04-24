@@ -70,7 +70,6 @@
         <DataGrid x:Name="SpoutDataGrid" Grid.Row="7" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" SelectionMode="Single" SelectionUnit="FullRow" Grid.ColumnSpan="11">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Spout Name" Binding="{Binding SpoutName}" Width="*"/>
-                <DataGridTextColumn Header="VMCP Port" Binding="{Binding Port}" Width="*"/>
                 <DataGridTextColumn Header="Width" Binding="{Binding OutputWidth}" Width="*"/>
                 <DataGridTextColumn Header="Height" Binding="{Binding OutputHeight}" Width="*"/>
             </DataGrid.Columns>
