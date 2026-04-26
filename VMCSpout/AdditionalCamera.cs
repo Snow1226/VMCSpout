@@ -23,6 +23,7 @@ namespace VMCSpout
         private GameObject _cubeObject;
         private Vector3 pos = Vector3.zero;
         private Quaternion rot = Quaternion.identity;
+        private float fov = 60f;
 
         private MemoryMappedFile cameraDataMemoryMappedFile;
         private MemoryMappedViewAccessor cameraDataAccessor;
@@ -93,19 +94,28 @@ namespace VMCSpout
             rot.y = _cameraData.Rotation[1];
             rot.z = _cameraData.Rotation[2];
             rot.w = _cameraData.Rotation[3];
-
+            fov = _cameraData.Fov;
             if (!IsValidFloat(pos.x) || !IsValidFloat(pos.y) || !IsValidFloat(pos.z)
                 || !IsValidFloat(rot.x) || !IsValidFloat(rot.y) || !IsValidFloat(rot.z) || !IsValidFloat(rot.w)
                 || !IsValidFloat(_cameraData.Fov))
                 return;
 
-            addCamera.enabled = _cameraData.CameraEnabled;
-            _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
-            _cubeObject.SetActive(_cameraData.CameraEnabled);
+            if(string.IsNullOrEmpty(_cameraData.DataVersion))
+            {
+                addCamera.enabled = true;
+                _mirrorCanvas.gameObject.SetActive(true);
+                _cubeObject.SetActive(true);
+            }
+            else
+            {
+                addCamera.enabled = _cameraData.CameraEnabled;
+                _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
+                _cubeObject.SetActive(_cameraData.CameraEnabled);
+            }
 
             this.gameObject.transform.localPosition = pos;
             this.gameObject.transform.localRotation = rot;
-            this.addCamera.fieldOfView = _cameraData.Fov;
+            this.addCamera.fieldOfView = fov;
         }
 
         private bool TryReadCameraData(out SpoutCameraData cameraData)
@@ -271,6 +281,7 @@ namespace VMCSpout
 
     public struct SpoutCameraData
     {
+        public string DataVersion;
         public bool CameraEnabled;
         public string Name;
         public float Fov;
@@ -278,6 +289,7 @@ namespace VMCSpout
         public float[] Rotation;
         public SpoutCameraData(bool cameraEnabled, string name, Vector3 pos, Quaternion rot, float fov)
         {
+            this.DataVersion = string.Empty;
             this.CameraEnabled = cameraEnabled;
             this.Name = name;
             this.Position = new float[] { pos.x, pos.y, pos.z };
