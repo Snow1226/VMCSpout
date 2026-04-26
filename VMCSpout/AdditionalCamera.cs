@@ -18,8 +18,12 @@ namespace VMCSpout
         public RenderTexture renderTexture { get; set; }
         public CameraSetting setting { get; set; }
 
+        private SpoutCameraData _cameraData;
+        private Canvas _mirrorCanvas;
+        private GameObject _cubeObject;
         private Vector3 pos = Vector3.zero;
         private Quaternion rot = Quaternion.identity;
+
         private MemoryMappedFile cameraDataMemoryMappedFile;
         private MemoryMappedViewAccessor cameraDataAccessor;
         private byte[] cameraDataBuffer;
@@ -52,6 +56,12 @@ namespace VMCSpout
 
             spoutSender.sourceTexture = renderTexture;
 
+            _mirrorCanvas = this.gameObject.GetComponentInChildren<Canvas>(true);
+            _cubeObject = this.transform.GetComponentInChildren<MeshRenderer>(true).gameObject;
+
+            addCamera.enabled = false;
+            _mirrorCanvas.gameObject.SetActive(false);
+            _cubeObject.SetActive(false);
             this.gameObject.SetActive(true);
         }
 
@@ -60,29 +70,42 @@ namespace VMCSpout
             if (!this.isActiveAndEnabled || addCamera == null)
                 return;
 
-            SpoutCameraData cameraData;
-            if (!TryReadCameraData(out cameraData))
+            if (!TryReadCameraData(out _cameraData))
+            {
+                addCamera.enabled = false;
+                _mirrorCanvas.gameObject.SetActive(false);
+                _cubeObject.SetActive(false);
                 return;
+            }
 
-            if (cameraData.Position == null || cameraData.Position.Length < 3 || cameraData.Rotation == null || cameraData.Rotation.Length < 4)
+            if (_cameraData.Position == null || _cameraData.Position.Length < 3 || _cameraData.Rotation == null || _cameraData.Rotation.Length < 4) 
+            {
+                addCamera.enabled = false;
+                _mirrorCanvas.gameObject.SetActive(false);
+                _cubeObject.SetActive(false);
                 return;
+            }
 
-            pos.x = cameraData.Position[0];
-            pos.y = cameraData.Position[1];
-            pos.z = cameraData.Position[2];
-            rot.x = cameraData.Rotation[0];
-            rot.y = cameraData.Rotation[1];
-            rot.z = cameraData.Rotation[2];
-            rot.w = cameraData.Rotation[3];
+            pos.x = _cameraData.Position[0];
+            pos.y = _cameraData.Position[1];
+            pos.z = _cameraData.Position[2];
+            rot.x = _cameraData.Rotation[0];
+            rot.y = _cameraData.Rotation[1];
+            rot.z = _cameraData.Rotation[2];
+            rot.w = _cameraData.Rotation[3];
 
             if (!IsValidFloat(pos.x) || !IsValidFloat(pos.y) || !IsValidFloat(pos.z)
                 || !IsValidFloat(rot.x) || !IsValidFloat(rot.y) || !IsValidFloat(rot.z) || !IsValidFloat(rot.w)
-                || !IsValidFloat(cameraData.Fov))
+                || !IsValidFloat(_cameraData.Fov))
                 return;
+
+            addCamera.enabled = _cameraData.CameraEnabled;
+            _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
+            _cubeObject.SetActive(_cameraData.CameraEnabled);
 
             this.gameObject.transform.localPosition = pos;
             this.gameObject.transform.localRotation = rot;
-            this.addCamera.fieldOfView = cameraData.Fov;
+            this.addCamera.fieldOfView = _cameraData.Fov;
         }
 
         private bool TryReadCameraData(out SpoutCameraData cameraData)
@@ -193,6 +216,12 @@ namespace VMCSpout
 
         private void ReleaseMemoryMap()
         {
+            if (cameraDataBuffer != null)
+            {
+                Array.Clear(cameraDataBuffer, 0, cameraDataBuffer.Length);
+                cameraDataBuffer = null;
+            }
+
             if (cameraDataAccessor != null)
             {
                 cameraDataAccessor.Dispose();
@@ -204,30 +233,52 @@ namespace VMCSpout
                 cameraDataMemoryMappedFile.Dispose();
                 cameraDataMemoryMappedFile = null;
             }
-
-            cameraDataBuffer = null;
         }
 
         private void OnDestroy()
         {
             ReleaseMemoryMap();
 
+            nextOpenAttemptTime = 0f;
+            memoryMapName = null;
+            _cameraData = default(SpoutCameraData);
+
+            if(spoutSender != null)
+            {
+                spoutSender.enabled = false;
+                spoutSender.sourceTexture = null;
+                Destroy(spoutSender);
+                spoutSender = null;
+            }
+
+            if (addCamera != null)
+            {
+                addCamera.targetTexture = null;
+                addCamera = null;
+            }
+
             if(renderTexture != null)
             {
                 renderTexture.Release();
+                Destroy(renderTexture);
                 renderTexture = null;
             }
+
+            _mirrorCanvas = null;
+            _cubeObject = null;
         }
     }
 
     public struct SpoutCameraData
     {
+        public bool CameraEnabled;
         public string Name;
         public float Fov;
         public float[] Position;
         public float[] Rotation;
-        public SpoutCameraData(string name, Vector3 pos, Quaternion rot, float fov)
+        public SpoutCameraData(bool cameraEnabled, string name, Vector3 pos, Quaternion rot, float fov)
         {
+            this.CameraEnabled = cameraEnabled;
             this.Name = name;
             this.Position = new float[] { pos.x, pos.y, pos.z };
             this.Rotation = new float[] { rot.x, rot.y, rot.z, rot.w };

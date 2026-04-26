@@ -69,6 +69,51 @@ namespace VMCSpout
 
         }
 
+        private void OnDestroy()
+        {
+            VMCEvents.OnModelLoaded -= OnModelLoaded;
+            VMCEvents.OnCameraChanged -= OnCameraChanged;
+
+            if (_spoutSender != null)
+            {
+                _spoutSender.enabled = false;
+                _spoutSender.sourceTexture = null;
+                Destroy(_spoutSender);
+                _spoutSender = null;
+            }
+
+            if (_mainCamSpoutCamera != null)
+            {
+                _mainCamSpoutCamera.targetTexture = null;
+                _mainCamSpoutCamera = null;
+            }
+
+            if (_mainCamRenderTexture != null)
+            {
+                _mainCamRenderTexture.Release();
+                Destroy(_mainCamRenderTexture);
+                _mainCamRenderTexture = null;
+            }
+
+            if (_spoutRoot != null)
+            {
+                Destroy(_spoutRoot);
+                _spoutRoot = null;
+            }
+
+            if (_spoutResources != null)
+            {
+                Destroy(_spoutResources);
+                _spoutResources = null;
+            }
+
+            _cameraCubes.Clear();
+            _currentCamera = null;
+            _thisScaleObject = null;
+            _syncObject = null;
+            _hipsObject = null;
+        }
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.C))
@@ -211,7 +256,6 @@ namespace VMCSpout
             _cameraCubes.Clear();
             foreach (CameraSetting cs in _settings.AdditionalCameras)
             {
-
                 var spCamera = Instantiate(_currentCamera);
                 DestroyImmediate(spCamera.GetComponent("AudioListener"));
                 DestroyImmediate(spCamera.GetComponent("CameraFollower"));
@@ -242,19 +286,19 @@ namespace VMCSpout
                 if(_settings.UseMirror)
                     CreateMirror(spCamera);
 
-                var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
-                additionalCam.Initialize(cs, _spoutResources);
-
                 var _cameraCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 _cameraCube.transform.SetParent(spCamera.transform);
                 _cameraCube.transform.localPosition = Vector3.zero;
                 _cameraCube.transform.localRotation = Quaternion.identity;
                 _cameraCube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                if(_displayCamCube)
+                if (_displayCamCube)
                     _cameraCube.GetComponent<MeshRenderer>().enabled = true;
                 else
                     _cameraCube.GetComponent<MeshRenderer>().enabled = false;
                 _cameraCubes.Add(_cameraCube);
+
+                var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
+                additionalCam.Initialize(cs, _spoutResources);
             }
         }
 
