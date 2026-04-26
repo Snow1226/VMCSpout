@@ -14,7 +14,7 @@ namespace VMCSpout
 {
     [VMCPlugin(
     Name: "VMC Spout",
-    Version: "0.2.1",
+    Version: "0.2.2",
     Author: "snow",
     Description: "Spout2 sender for VMC",
     AuthorURL: "https://twitter.com/snow_mil",
