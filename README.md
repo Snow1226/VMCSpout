@@ -16,7 +16,7 @@ Windowsに起動を止められているため、
 
 ### Setting
   
-<img width="583" height="442" alt="image" src="https://github.com/user-attachments/assets/650b2098-83fb-475e-9c73-472467d08737" />
+<img width="585" height="446" alt="image" src="https://github.com/user-attachments/assets/74abde0b-3dac-4a6a-88e1-0ac84c9bff0d" />
 
 Spout SenderはVMCの画面と同じ画各を「VMC Spout Main」  
 追加カメラを「VMC Spout *」（*は数字  
@@ -30,7 +30,6 @@ Spout SenderはVMCの画面と同じ画各を「VMC Spout Main」
 | SpoutName | Spoutカメラの名前を付けます。他と被らないようにしてください。 |
 | Width | SpoutCameraの横解像度です。OBSやBeatSaberなどのウインドウサイズに合わせるくらいが推奨 |
 | Height | SpoutCameraの縦解像度です。OBSやBeatSaberなどのウインドウサイズに合わせるくらいが推奨 |
-| VMCP Port | CameraPlus等からSpoutCameraの位置を受信するポートです。重複しないようにしてください。 |
 |  |  |
 | Use Mirror | 床面ミラーのオンオフ |
 | Mirror Intensity | ミラーの透明度です。0にいくほど薄くなります。 |
