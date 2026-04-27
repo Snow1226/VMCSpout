@@ -61,7 +61,8 @@ namespace VMCSpout
             _cubeObject = this.transform.GetComponentInChildren<MeshRenderer>(true).gameObject;
 
             addCamera.enabled = false;
-            _mirrorCanvas.gameObject.SetActive(false);
+            if(_mirrorCanvas != null)
+                _mirrorCanvas.gameObject.SetActive(false);
             _cubeObject.SetActive(false);
             this.gameObject.SetActive(true);
         }
@@ -74,7 +75,8 @@ namespace VMCSpout
             if (!TryReadCameraData(out _cameraData))
             {
                 addCamera.enabled = false;
-                _mirrorCanvas.gameObject.SetActive(false);
+                if (_mirrorCanvas != null)
+                    _mirrorCanvas.gameObject.SetActive(false);
                 _cubeObject.SetActive(false);
                 return;
             }
@@ -82,7 +84,8 @@ namespace VMCSpout
             if (_cameraData.Position == null || _cameraData.Position.Length < 3 || _cameraData.Rotation == null || _cameraData.Rotation.Length < 4) 
             {
                 addCamera.enabled = false;
-                _mirrorCanvas.gameObject.SetActive(false);
+                if (_mirrorCanvas != null)
+                    _mirrorCanvas.gameObject.SetActive(false);
                 _cubeObject.SetActive(false);
                 return;
             }
@@ -103,13 +106,15 @@ namespace VMCSpout
             if(string.IsNullOrEmpty(_cameraData.DataVersion))
             {
                 addCamera.enabled = true;
-                _mirrorCanvas.gameObject.SetActive(true);
+                if (_mirrorCanvas != null)
+                    _mirrorCanvas.gameObject.SetActive(true);
                 _cubeObject.SetActive(true);
             }
             else
             {
                 addCamera.enabled = _cameraData.CameraEnabled;
-                _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
+                if (_mirrorCanvas != null)
+                    _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
                 _cubeObject.SetActive(_cameraData.CameraEnabled);
             }
 
