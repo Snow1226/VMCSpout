@@ -71,47 +71,54 @@ namespace VMCSpout
 
         private void OnDestroy()
         {
-            VMCEvents.OnModelLoaded -= OnModelLoaded;
-            VMCEvents.OnCameraChanged -= OnCameraChanged;
-
-            if (_spoutSender != null)
+            try
             {
-                _spoutSender.enabled = false;
-                _spoutSender.sourceTexture = null;
-                Destroy(_spoutSender);
-                _spoutSender = null;
-            }
+                VMCEvents.OnModelLoaded -= OnModelLoaded;
+                VMCEvents.OnCameraChanged -= OnCameraChanged;
 
-            if (_mainCamSpoutCamera != null)
+                if (_spoutSender != null)
+                {
+                    _spoutSender.enabled = false;
+                    _spoutSender.sourceTexture = null;
+                    Destroy(_spoutSender);
+                    _spoutSender = null;
+                }
+
+                if (_mainCamSpoutCamera != null)
+                {
+                    _mainCamSpoutCamera.targetTexture = null;
+                    _mainCamSpoutCamera = null;
+                }
+
+                if (_mainCamRenderTexture != null)
+                {
+                    _mainCamRenderTexture.Release();
+                    Destroy(_mainCamRenderTexture);
+                    _mainCamRenderTexture = null;
+                }
+
+                if (_spoutRoot != null)
+                {
+                    Destroy(_spoutRoot);
+                    _spoutRoot = null;
+                }
+
+                if (_spoutResources != null)
+                {
+                    Destroy(_spoutResources);
+                    _spoutResources = null;
+                }
+
+                _cameraCubes.Clear();
+                _currentCamera = null;
+                _thisScaleObject = null;
+                _syncObject = null;
+                _hipsObject = null;
+            }
+            catch (Exception ex)
             {
-                _mainCamSpoutCamera.targetTexture = null;
-                _mainCamSpoutCamera = null;
+                Debug.LogException(ex);
             }
-
-            if (_mainCamRenderTexture != null)
-            {
-                _mainCamRenderTexture.Release();
-                Destroy(_mainCamRenderTexture);
-                _mainCamRenderTexture = null;
-            }
-
-            if (_spoutRoot != null)
-            {
-                Destroy(_spoutRoot);
-                _spoutRoot = null;
-            }
-
-            if (_spoutResources != null)
-            {
-                Destroy(_spoutResources);
-                _spoutResources = null;
-            }
-
-            _cameraCubes.Clear();
-            _currentCamera = null;
-            _thisScaleObject = null;
-            _syncObject = null;
-            _hipsObject = null;
         }
 
         private void Update()

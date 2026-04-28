@@ -21,6 +21,7 @@ namespace VMCSpoutSettingWPF
         public int ResultSpoutCount { get; private set; }
         public ObservableCollection<CameraPlusProfile> Profiles;
 
+        private const string _defaultProfilePath = "UserData/CameraPlus";
         private const string _profilePath = "UserData/CameraPlus/Profiles";
         public CameraPlusSetup()
         {
@@ -53,6 +54,7 @@ namespace VMCSpoutSettingWPF
             {
                 var profileFolders = Directory.GetDirectories(path);
                 Profiles.Clear();
+                Profiles.Add(new CameraPlusProfile { Name = "@ Default Profile", IsEnabled = true });
                 foreach(var folder in profileFolders)
                 {
                     var p = new CameraPlusProfile { Name = Path.GetFileName(folder), IsEnabled = true };
@@ -89,7 +91,12 @@ namespace VMCSpoutSettingWPF
             {
                 if (p.IsEnabled)
                 {
-                    var path = Path.Combine(BeatSaberFolderTextBox.Text, _profilePath, p.Name);
+                    string path;
+                    if(p.Name == "@ Default Profile")
+                        path = Path.Combine(BeatSaberFolderTextBox.Text, _defaultProfilePath);
+                    else
+                        path = Path.Combine(BeatSaberFolderTextBox.Text, _profilePath, p.Name);
+
                     var files = Directory.GetFiles(path);
                     for (int i = 0; i < files.Length; i++)
                     {
