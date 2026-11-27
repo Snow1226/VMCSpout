@@ -19,7 +19,6 @@ namespace VMCSpout
         public CameraSetting setting { get; set; }
 
         private SpoutCameraData _cameraData;
-        private Canvas _mirrorCanvas;
         private GameObject _cubeObject;
         private Vector3 pos = Vector3.zero;
         private Quaternion rot = Quaternion.identity;
@@ -57,12 +56,9 @@ namespace VMCSpout
 
             spoutSender.sourceTexture = renderTexture;
 
-            _mirrorCanvas = this.gameObject.GetComponentInChildren<Canvas>(true);
             _cubeObject = this.transform.GetComponentInChildren<MeshRenderer>(true).gameObject;
 
             addCamera.enabled = false;
-            if(_mirrorCanvas != null)
-                _mirrorCanvas.gameObject.SetActive(false);
             _cubeObject.SetActive(false);
             this.gameObject.SetActive(true);
         }
@@ -75,8 +71,6 @@ namespace VMCSpout
             if (!TryReadCameraData(out _cameraData))
             {
                 addCamera.enabled = false;
-                if (_mirrorCanvas != null)
-                    _mirrorCanvas.gameObject.SetActive(false);
                 _cubeObject.SetActive(false);
                 return;
             }
@@ -84,8 +78,6 @@ namespace VMCSpout
             if (_cameraData.Position == null || _cameraData.Position.Length < 3 || _cameraData.Rotation == null || _cameraData.Rotation.Length < 4) 
             {
                 addCamera.enabled = false;
-                if (_mirrorCanvas != null)
-                    _mirrorCanvas.gameObject.SetActive(false);
                 _cubeObject.SetActive(false);
                 return;
             }
@@ -106,15 +98,11 @@ namespace VMCSpout
             if(string.IsNullOrEmpty(_cameraData.DataVersion))
             {
                 addCamera.enabled = true;
-                if (_mirrorCanvas != null)
-                    _mirrorCanvas.gameObject.SetActive(true);
                 _cubeObject.SetActive(true);
             }
             else
             {
                 addCamera.enabled = _cameraData.CameraEnabled;
-                if (_mirrorCanvas != null)
-                    _mirrorCanvas.gameObject.SetActive(_cameraData.CameraEnabled);
                 _cubeObject.SetActive(_cameraData.CameraEnabled);
             }
 
@@ -274,12 +262,14 @@ namespace VMCSpout
 
             if(renderTexture != null)
             {
+                if (RenderTexture.active == renderTexture)
+                    RenderTexture.active = null;
+
                 renderTexture.Release();
                 Destroy(renderTexture);
                 renderTexture = null;
             }
 
-            _mirrorCanvas = null;
             _cubeObject = null;
         }
     }

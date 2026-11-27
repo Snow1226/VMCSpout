@@ -14,7 +14,7 @@ namespace VMCSpout
 {
     [VMCPlugin(
     Name: "VMC Spout",
-    Version: "0.2.3",
+    Version: "0.3.0",
     Author: "snow",
     Description: "Spout2 sender for VMC",
     AuthorURL: "https://twitter.com/snow_mil",
@@ -41,6 +41,10 @@ namespace VMCSpout
 
         private GameObject _hipsObject = null;
 
+        private GameObject _mirrorObject;
+        private Material _mirrorMaterial;
+        private bool _isReleasing = false;
+
         private void Awake()
         {
             VMCEvents.OnModelLoaded += OnModelLoaded;
@@ -60,7 +64,7 @@ namespace VMCSpout
 
         private void LateUpdate()
         {
-            if (_currentCamera)
+            if (_currentCamera && _mainCamSpoutCamera != null)
             {
                 _mainCamSpoutCamera.fieldOfView = _currentCamera.fieldOfView;
                 _mainCamSpoutCamera.transform.localPosition = _currentCamera.transform.localPosition;
@@ -71,10 +75,43 @@ namespace VMCSpout
 
         private void OnDestroy()
         {
+            ReleaseResources();
+        }
+
+        private void OnApplicationQuit()
+        {
+            ReleaseResources();
+        }
+
+        private void ReleaseResources()
+        {
+            if (_isReleasing)
+                return;
+
+            _isReleasing = true;
+
             try
             {
                 VMCEvents.OnModelLoaded -= OnModelLoaded;
                 VMCEvents.OnCameraChanged -= OnCameraChanged;
+
+                if (_spoutRoot != null)
+                {
+                    var additionalCameras = _spoutRoot.GetComponentsInChildren<AdditionalCamera>(true);
+                    foreach (var additionalCamera in additionalCameras)
+                    {
+                        if (additionalCamera == null) continue;
+
+                        if (additionalCamera.spoutSender != null)
+                        {
+                            additionalCamera.spoutSender.enabled = false;
+                            additionalCamera.spoutSender.sourceTexture = null;
+                        }
+
+                        if (additionalCamera.addCamera != null)
+                            additionalCamera.addCamera.targetTexture = null;
+                    }
+                }
 
                 if (_spoutSender != null)
                 {
@@ -87,11 +124,15 @@ namespace VMCSpout
                 if (_mainCamSpoutCamera != null)
                 {
                     _mainCamSpoutCamera.targetTexture = null;
+                    SafeDestroy(_mainCamSpoutCamera.gameObject);
                     _mainCamSpoutCamera = null;
                 }
 
                 if (_mainCamRenderTexture != null)
                 {
+                    if (RenderTexture.active == _mainCamRenderTexture)
+                        RenderTexture.active = null;
+
                     _mainCamRenderTexture.Release();
                     Destroy(_mainCamRenderTexture);
                     _mainCamRenderTexture = null;
@@ -99,14 +140,26 @@ namespace VMCSpout
 
                 if (_spoutRoot != null)
                 {
-                    Destroy(_spoutRoot);
+                    SafeDestroy(_spoutRoot);
                     _spoutRoot = null;
                 }
 
                 if (_spoutResources != null)
                 {
-                    Destroy(_spoutResources);
+                    SafeDestroy(_spoutResources);
                     _spoutResources = null;
+                }
+
+                if(_mirrorObject != null)
+                {
+                    SafeDestroy(_mirrorObject);
+                    _mirrorObject = null;
+                }
+
+                if (_mirrorMaterial != null)
+                {
+                    SafeDestroy(_mirrorMaterial);
+                    _mirrorMaterial = null;
                 }
 
                 _cameraCubes.Clear();
@@ -119,6 +172,17 @@ namespace VMCSpout
             {
                 Debug.LogException(ex);
             }
+        }
+
+        private static void SafeDestroy(UnityEngine.Object obj)
+        {
+            if (obj == null)
+                return;
+
+            if (Application.isPlaying)
+                Destroy(obj);
+            else
+                DestroyImmediate(obj);
         }
 
         private void Update()
@@ -138,6 +202,9 @@ namespace VMCSpout
                 if (sync != null && _thisScaleObject != null)
                 {
                     FieldInfo info = sync.GetType().GetField("AvatarSelfScaling", BindingFlags.Public | BindingFlags.Instance);
+                    if (info == null)
+                        return;
+
                     var result = (bool)info.GetValue(sync);
                     if(result == _thisScaleObject.IsSync)
                     {
@@ -173,7 +240,32 @@ namespace VMCSpout
             proc.Start();
             proc.WaitForExit();
             LoadSetting();
+            SetupMirror();
             SpoutCameraInitialize();
+        }
+
+        private void SetupMirror()
+        {
+            if (_settings.UseMirror)
+            {
+                if (_mirrorObject == null)
+                {
+                    _mirrorObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                    _mirrorMaterial = new Material(VMCSpoutStatic.shaders["Custom/MirrorPlane"]);
+                    _mirrorObject.GetComponent<Renderer>().sharedMaterial = _mirrorMaterial;
+                    _mirrorObject.layer = VMCSpoutStatic.AvatarLayer;
+                    var mirror = _mirrorObject.AddComponent<MirrorPlane>();
+                    mirror.textureSize = _settings.MirrorResolution;
+                    mirror.reflectivity = _settings.MirrorIntensity;
+                }
+                _mirrorObject.transform.position = new Vector3(_settings.MirrorPositionX, _settings.MirrorPositionY, _settings.MirrorPositionZ);
+                _mirrorObject.transform.rotation = Quaternion.Euler(0, _settings.MirrorRotationY, 0);
+                _mirrorObject.transform.localScale = new Vector3(_settings.MirrorWidth / 10, 1, _settings.MirrorHeight / 10);
+            }else if(_mirrorObject != null)
+            {
+                Destroy(_mirrorObject);
+                _mirrorObject = null;
+            }
         }
 
         private void OnModelLoaded(GameObject currentModel)
@@ -183,6 +275,9 @@ namespace VMCSpout
                 renderer.gameObject.layer = VMCSpoutStatic.AvatarLayer;
 
             _hipsObject = currentModel.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Hips).gameObject;
+
+            SetupMirror();
+
             SpoutCameraInitialize();
         }
 
@@ -202,7 +297,13 @@ namespace VMCSpout
 
             if (_mainCamRenderTexture == null || _mainCamRenderTexture.width != _settings.MainCamOutputWidth || _mainCamRenderTexture.height != _settings.MainCamOutputHeight)
             {
-                _mainCamRenderTexture?.Release();
+                if (_mainCamRenderTexture != null)
+                {
+                    _mainCamRenderTexture.Release();
+                    Destroy(_mainCamRenderTexture);
+                    _mainCamRenderTexture = null;
+                }
+
                 _mainCamRenderTexture = new RenderTexture(_settings.MainCamOutputWidth, _settings.MainCamOutputHeight, 24)
                 {
                     useMipMap = false,
@@ -218,7 +319,8 @@ namespace VMCSpout
             _spoutRoot.transform.position = Vector3.zero;
             _spoutRoot.transform.rotation = Quaternion.identity;
             _thisScaleObject = _spoutRoot.gameObject.AddComponent<ScaleSync>();
-            _thisScaleObject.TargetTransform = GameObject.Find("HandTrackerRoot").transform;
+            var handTrackerRoot = GameObject.Find("HandTrackerRoot");
+            _thisScaleObject.TargetTransform = handTrackerRoot != null ? handTrackerRoot.transform : null;
 
             _mainCamSpoutCamera = Instantiate(_currentCamera);
             DestroyImmediate(_mainCamSpoutCamera.GetComponent("AudioListener"));
@@ -290,12 +392,9 @@ namespace VMCSpout
                 spCamera.depth = -1;
                 spCamera.nearClipPlane = 0.01f;
 
-                if(_settings.UseMirror)
-                    CreateMirror(spCamera);
-
                 var _cameraCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 _cameraCube.transform.SetParent(spCamera.transform);
-                _cameraCube.transform.localPosition = Vector3.zero;
+                _cameraCube.transform.localPosition = new Vector3(0, 0, -0.06f);
                 _cameraCube.transform.localRotation = Quaternion.identity;
                 _cameraCube.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                 if (_displayCamCube)
@@ -307,39 +406,6 @@ namespace VMCSpout
                 var additionalCam = spCamera.gameObject.AddComponent<AdditionalCamera>();
                 additionalCam.Initialize(cs, _spoutResources);
             }
-        }
-
-        private void CreateMirror(Camera camera)
-        {
-            var canvas = new GameObject("MirrorCanvas").AddComponent<Canvas>();
-            canvas.transform.SetParent(camera.transform);
-            canvas.gameObject.layer = VMCSpoutStatic.AvatarLayer;
-            canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            canvas.worldCamera = camera;
-
-            CanvasScaler canvasScaler = canvas.gameObject.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-            canvasScaler.scaleFactor = 1;
-            canvasScaler.referencePixelsPerUnit = 100;
-
-            RawImage rawImage = new GameObject("MirrorRawImage").AddComponent<RawImage>();
-            rawImage.transform.SetParent(canvas.transform);
-            rawImage.gameObject.layer = VMCSpoutStatic.AvatarLayer;
-
-            rawImage.transform.localPosition = Vector3.zero;
-            rawImage.transform.localRotation = Quaternion.identity;
-            rawImage.transform.localScale = Vector3.one;
-
-            var mirror = rawImage.gameObject.AddComponent<Mirror>();
-            mirror.setting = _settings;
-            if (_hipsObject == null)
-                mirror.target = _spoutRoot.transform ;
-            else
-                mirror.target = _hipsObject.transform;
-
-            mirror.renderCamera = camera;
-            mirror.Initialize(_settings.MirrorResolution,_settings.MirrorWidth,_settings.MirrorHeight);
-
         }
     }
 }

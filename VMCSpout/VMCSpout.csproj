@@ -86,7 +86,7 @@
   <ItemGroup>
     <Compile Include="AdditionalCamera.cs" />
     <Compile Include="ComponentUtility.cs" />
-    <Compile Include="Mirror.cs" />
+    <Compile Include="MirrorPlane.cs" />
     <Compile Include="ScaleSync.cs" />
     <Compile Include="uOSC\Runtime\Core\Bundle.cs" />
     <Compile Include="uOSC\Runtime\Core\DotNet\Thread.cs" />
